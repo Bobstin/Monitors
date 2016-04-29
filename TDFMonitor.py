@@ -10,57 +10,85 @@ import datetime
 import os
 import psycopg2
 
-
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
 	#opens the old html file and the log
-	oldhtml = open("C:\TDF Check\oldhtml.txt","r")
+	#oldhtml = open("C:\TDF Check\oldhtml.txt","r")
 	log = open("C:\TDF Check\log.txt","a")
 	timestamp = time.strftime("\n%m/%d/%y %H:%M:\n")
 	log.write(timestamp.encode('utf-8'))
 
+	#Connects to the database, creates a cursor
+	DBConn = psycopg2.connect(database="testdb",user="tdfmonitor",password=DBPass,host="127.0.0.1",port="5432")
+	cur = DBConn.cursor()
+	
 	#uses beautifulsoup to process the html
-	oldprocessedhtml = BeautifulSoup(oldhtml,'lxml')
 	newprocessedhtml = BeautifulSoup(newhtml,'lxml')
 	
 	#parses the html for the show names
-	oldshows = oldprocessedhtml.find_all('div',class_='ListingShowTitle')
 	newshows = newprocessedhtml.find_all('div',class_='ListingShowTitle')
-
-	#starts to draft the email; assumes to start that no email is required
-	emailbody ="TDF Monitor has found a new show is being offered on TDF:\n\n"
-	needtosendemail = 0
-
-	#compares the list of new shows, and detects if any is missing.
-	#If one is, adds it to the email, and flags that an email is needed
-	for show in newshows:
-		if show in oldshows:
-			pass
-		else:
-			needtosendemail=1
-			emailbody = emailbody + "\t" + show.text + "\n"
-			log.write(show.text+"\n")
-
-	emailbody = emailbody + "\nBest,\nTDF Monitor"
-	#emails = ['***REMOVED***', '***REMOVED***','***REMOVED***','***REMOVED***']
-	emails = ['***REMOVED***']
 	
+	#clears the previous pull
+	cur.execute("DELETE FROM latest_tdf_pull;")
 
-	#If needed, sends the email
-	if needtosendemail == 1:
+	#Sets the the line for how long a show needs to be missing before sending
+	currenttime = datetime.datetime.now()
+	lag = datetime.timedelta(hours = 24)
+	oldline = currenttime - lag
+	#print oldline
+
+	#inserts the latest pull into the database
+	for show in newshows:
+		#print show.text
+		cur.execute("INSERT INTO latest_tdf_pull(show_name,last_found) VALUES (%s,%s);",[show.text,datetime.datetime.now()])
+
+	#compares the two tables to identify what is new
+	cur.execute("""SELECT latest_tdf_pull.show_name FROM latest_tdf_pull LEFT OUTER JOIN tdf_shows ON (latest_tdf_pull.show_name = tdf_shows.show_name)
+	WHERE tdf_shows.show_name is null
+	OR tdf_shows.last_found<%s;""",[oldline])
+	showstosend = cur.fetchall()
+	#print showstosend 
+
+	#Adds the missing rows
+	cur.execute("""INSERT INTO tdf_shows
+	SELECT latest_tdf_pull.show_name FROM latest_tdf_pull LEFT OUTER JOIN tdf_shows ON (latest_tdf_pull.show_name = tdf_shows.show_name)
+	WHERE tdf_shows.show_name is null""")
+	
+	#updates the tdf_shows table with the new last_found times
+	cur.execute("""UPDATE tdf_shows
+	SET last_found = latest_tdf_pull.last_found
+	FROM latest_tdf_pull
+	WHERE tdf_shows.show_name = latest_tdf_pull.show_name;""")
+
+	DBConn.commit()
+	if len(showstosend) > 0:
+		#starts to draft the email
+		emailbody ="TDF Monitor has found a new show is being offered on TDF:\n\n"
+
+		#Adds list of shows that were found
+		for show in showstosend:
+			emailbody = emailbody + "\t" + show[0] + "\n"
+			log.write(show[0]+"\n")
+
+		emailbody = emailbody + "\nBest,\nTDF Monitor"
+
+		#queries the database for the list of emails
+		cur.execute("""SELECT email FROM users;""")
+		emails = cur.fetchall()
+
+		#Sends the email
 		#print emailbody
 		for email in emails:
-			send_email("tdfmonitor@gmail.com",GmailPass,email,"New show detected by TDF Monitor",emailbody)
+			send_email("tdfmonitor@gmail.com",GmailPass,email[0],"New show detected by TDF Monitor",emailbody)
 		
 	else:
 		#print "No new shows detected"
-		#send_email("tdfmonitor@gmail.com","***REMOVED***","***REMOVED***","New show detected by TDF Monitor",emailbody)
 		log.write("No new shows detected\n")
 
 	#saves the new html to the old file for later comparisons
-	oldhtml.close()
-	oldhtml = open("C:\TDF Check\oldhtml.txt","wb")
-	oldhtml.write(newhtml.encode('utf-8'))
+	#oldhtml.close()
+	#oldhtml = open("C:\TDF Check\oldhtml.txt","wb")
+	#oldhtml.write(newhtml.encode('utf-8'))
 
 def TDFPull():
 	print "Pulling html from TDF"
@@ -110,25 +138,11 @@ def waitonehour():
 	nextrun = roundedtime + waittime
 	time.sleep((nextrun-currenttime).total_seconds())
 
-#Connect to database
-DBConn = psycopg2.connect(database="testdb",user="tdfmonitor",password=DBPass,host="127.0.0.1",port="5432")
-print 'Opened DB successfully'
-
-#Executes a query
-cur = DBConn.cursor()
-cur.execute("SELECT id,name,email,want_tdf,want_travel,travel_region from USERS")
-users = cur.fetchall()
-for user in users:
-	print "ID = ", user[0]
-	print "name = ", user[1]
-	print "email = ", user[2]
-
 while True:
 	print datetime.datetime.today()
 	newhtml = TDFPull()
 	DetectNewShows(newhtml)
 	print "Going back to sleep\n"
 	waitonehour()
-
 
 print "end"

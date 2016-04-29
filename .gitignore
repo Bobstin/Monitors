@@ -1,0 +1,5 @@
+.env
+IEDriverServer.exe
+phantomjs/
+TDF_Scraper_localpass.py
+venv/

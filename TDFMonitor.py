@@ -16,6 +16,8 @@ DBPass = os.environ.get('DBPass')
 TDFPass = os.environ.get('TDFPass')
 DatabaseURL = os.environ.get('DATABASE_URL')
 
+print GmailPass
+
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
 	timestamp = time.strftime("\n%m/%d/%y %H:%M:\n")

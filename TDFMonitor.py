@@ -72,8 +72,8 @@ def DetectNewShows(newhtml):
 
 		emailbody = emailbody + "\nBest,\nTDF Monitor"
 
-		#queries the database for the list of emails
-		cur.execute("""SELECT email FROM users;""")
+		#queries the database for the list of emails of users that want tdf updates
+		cur.execute("""SELECT email FROM users WHERE want_tdf ='t' ;""")
 		emails = cur.fetchall()
 
 		#Sends the email

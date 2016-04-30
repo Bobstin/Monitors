@@ -1,1 +1,2 @@
-worker: python TDFMonitor.py
+TDF: python TDFMonitor.py
+Travel: python TravelMonitor.py

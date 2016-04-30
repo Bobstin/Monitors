@@ -14,10 +14,6 @@ GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')
 TDFPass = os.environ.get('TDFPass')
 
-print GmailPass
-print DBPass
-print TDFPass
-
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
 	#opens the old html file and the log

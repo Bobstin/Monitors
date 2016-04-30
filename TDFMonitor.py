@@ -13,6 +13,7 @@ import psycopg2
 GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')
 TDFPass = os.environ.get('TDFPass')
+DatbaseURL = os.environ.get('DATABASE_URL')
 
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
@@ -20,7 +21,7 @@ def DetectNewShows(newhtml):
 	print timestamp.encode('utf-8')
 
 	#Connects to the database, creates a cursor
-	DBConn = psycopg2.connect(database="testdb",user="tdfmonitor",password=DBPass,host="127.0.0.1",port="5432")
+	DBConn = psycopg2.connect(database="monitordb",user="tdfmonitor",password=DBPass,host=DatbaseURL,port="5432")
 	cur = DBConn.cursor()
 	
 	#uses beautifulsoup to process the html

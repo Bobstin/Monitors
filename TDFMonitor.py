@@ -16,11 +16,8 @@ TDFPass = os.environ.get('TDFPass')
 
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
-	#opens the old html file and the log
-	#oldhtml = open("C:\TDF Check\oldhtml.txt","r")
-	log = open("C:\TDF Check\log.txt","a")
 	timestamp = time.strftime("\n%m/%d/%y %H:%M:\n")
-	log.write(timestamp.encode('utf-8'))
+	print timestamp.encode('utf-8')
 
 	#Connects to the database, creates a cursor
 	DBConn = psycopg2.connect(database="testdb",user="tdfmonitor",password=DBPass,host="127.0.0.1",port="5432")
@@ -72,7 +69,7 @@ def DetectNewShows(newhtml):
 		#Adds list of shows that were found
 		for show in showstosend:
 			emailbody = emailbody + "\t" + show[0] + "\n"
-			log.write(show[0]+"\n")
+			print show[0]+"\n"
 
 		emailbody = emailbody + "\nBest,\nTDF Monitor"
 
@@ -86,19 +83,14 @@ def DetectNewShows(newhtml):
 			send_email("tdfmonitor@gmail.com",GmailPass,email[0],"New show detected by TDF Monitor",emailbody)
 		
 	else:
-		#print "No new shows detected"
-		log.write("No new shows detected\n")
+		print "No new shows detected\n"
 
-	#saves the new html to the old file for later comparisons
-	#oldhtml.close()
-	#oldhtml = open("C:\TDF Check\oldhtml.txt","wb")
-	#oldhtml.write(newhtml.encode('utf-8'))
 
 def TDFPull():
 	print "Pulling html from TDF"
 	#Go to website and login
 	#driver = webdriver.Ie()
-	driver = webdriver.PhantomJS(executable_path='C:\TDF Check\phantomjs\PhantomJS.exe')
+	driver = webdriver.PhantomJS()
 	driver.get('http://secure2.tdf.org')
 	username = driver.find_element_by_name('LOGON_EMAIL')
 	username.clear()

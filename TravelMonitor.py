@@ -1,81 +1,103 @@
 import tweepy
 import time
 import smtplib
+import os
+import psycopg2
+import urlparse
 
-consumer_key = 	'***REMOVED***'
-consumer_secret = 	'***REMOVED***'
+consumer_key = 	os.environ.get('consumer_key')
+consumer_secret = 	os.environ.get('consumer_secret')
 
-access_token = '***REMOVED***'
-access_token_secret = '***REMOVED***'
+access_token = os.environ.get('access_token')
+access_token_secret = os.environ.get('access_token_secret')
+
+TravelGmailPass = os.environ.get('TravelGmailPass')
+
+DatabaseURL = os.environ.get('DATABASE_URL')
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 
-#FlightDeal = api.get_user('TheFlightDeal')
-
-#print FlightDeal.screen_name
-#print FlightDeal.followers_count
-
-#FlightStatuses = api.user_timeline('TheFlightDeal')
-#print FlightStatuses
-
-#for tweet in FlightStatuses:
-#	print tweet.text
-
 class FlightStatusListenerClass(tweepy.StreamListener):
 
 	def on_status(self, status):
 		TweetAuthor = status.author.screen_name.encode('ascii','ignore')
 		TweetText =  status.text.encode('ascii', 'ignore')
-		log = open("C:\Travel Monitor\log.txt","a")
 		print TweetAuthor + ": " + TweetText
-		log.write(TweetAuthor + ": " + TweetText+'\n')
 		
+		#Defaults all triggers to false
 		WrittenByTFD = False
 		ContainsKeyWord = False
 		IsAReply = False
-		AllKeywords = ['New York','Laguardia','LGA','JFK','Newark','EWR','NYC','Business','NY']
 
-		
+		#Sets the words to look for in each region
+		NYCKeywords = ['New York','Laguardia','LGA','JFK','Newark','EWR','NYC','NY']
+		SFKeywords = ['San Francisco','SFO','SJC','SF','OAK']
+		AllKeywords = NYCKeywords + SFKeywords
+		print AllKeywords
 
 		try:
+			#Checks the tweet for each of the triggers
 			if TweetAuthor == 'TheFlightDeal': WrittenByTFD = True
 			if any(x in TweetText for x in AllKeywords): ContainsKeyWord = True
+			if any(x in TweetText for x in NYCKeywords): ContainsNYCKeyWord = True
+			if any(x in TweetText for x in SFKeywords): ContainsSFKeyWord = True
 			if 	status.in_reply_to_status_id != None: IsAReply = True
 
 
 			if WrittenByTFD and ContainsKeyWord and ~IsAReply:
+				#If the tweet was written by the flight deal, contains a keyword, and is not a reply, emails it out
 				print 'Emailing Tweet\n'
-				log.write('Emailing Tweet\n\n')
 				timestamp = time.strftime("\n%m/%d/%y %H:%M:")
 				print timestamp
 				log.write(timestamp.encode('utf-8')+'\n')
+
+				#Connects to the database to find what users to send the email to
+				if DatabaseURL=='127.0.0.1':
+					conn = psycopg2.connect(database="monitordb",user="tdfmonitor",password=DBPass,host=DatabaseURL,port="5432")
+				else:
+					urlparse.uses_netloc.append("postgres")
+					url = urlparse.urlparse(os.environ["DATABASE_URL"])
+
+					conn = psycopg2.connect(
+				    	database=url.path[1:],
+				   		user=url.username,
+				    	password=url.password,
+				    	host=url.hostname,
+				    	port=url.port
+					)
+
+				cur = conn.cursor()
+
+				#Constructs the body of the email
 				emailbody ="Flight Deal Monitor has found a deal on @TheFlightDeal:\n\n" + TweetText + '\n\nBest,\nFlight Deal Monitor'
-				send_email("flightdealmonitor@gmail.com","***REMOVED***","***REMOVED***","New deal detected by Flight Deal Monitor",emailbody)
-				send_email("flightdealmonitor@gmail.com","***REMOVED***","***REMOVED***","New deal detected by Flight Deal Monitor",emailbody)
-				send_email("flightdealmonitor@gmail.com","***REMOVED***","***REMOVED***","New deal detected by Flight Deal Monitor",emailbody)
+
+				if ContainsNYCKeyWord:
+					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'NYC';""")
+					emails = cur.fetchall()
+					for email in emails:
+						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email,"New deal detected by Flight Deal Monitor",emailbody)
+
+				if ContainsSFKeyWord:
+					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'SF';""")
+					emails = cur.fetchall()
+					for email in emails:
+						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email,"New deal detected by Flight Deal Monitor",emailbody)
+
 			else:
 				print 'Ignoring Tweet\n'
-				log.write('Ignoring Tweet\n\n')
-				log.close()
 
 		except Exception as e:
 			print e
-			send_email("flightdealmonitor@gmail.com","***REMOVED***","***REMOVED***","ERROR: Flight Deal Monitor",e)
-			log.write(e+'\n')
-			log.close()
-	
+
 
 	def on_error(self,status_code):
-		log = open("C:\Travel Monitor\log.txt","a")
 		print 'Error code recieved'
 		print status_code
 		error_email_body = "There has been an error in the flight deal monitor, with error code " + str(status_code)
-		log.write(error_email_body+'\n')
-		log.close()
-		send_email("flightdealmonitor@gmail.com","***REMOVED***","***REMOVED***","ERROR: Flight Deal Monitor",error_email_body)
+		send_email("flightdealmonitor@gmail.com",TravelGmailPass,"***REMOVED***","ERROR: Flight Deal Monitor",error_email_body)
 		if status_code == 420:
 			print 'I was disconnected by Twitter'
 			return False
@@ -98,24 +120,22 @@ def send_email(user, pwd, recipient, subject, body):
 	server_ssl.login(gmail_user, gmail_pwd)  
 	server_ssl.sendmail(FROM, TO, message)
 	server_ssl.close()
-	#print 'successfully sent the mail'
+	#print 'successfully sent the email'
 
 
 try:
 	FlightStatusListener = FlightStatusListenerClass()
 	FlightStatusStream = tweepy.Stream(auth = api.auth, listener = FlightStatusListener)
 	#Need to filter on the user ID of @TheFlightDeal
-	FlightStatusStream.filter(follow=['352093320'], async = True)
+	#FlightStatusStream.filter(follow=['352093320'], async = True)
+	FlightStatusStream.filter(follow=['46830140'], async = True)
+	
 except Exception as e:
 	print e
 	print "this is where the error is being caught"
 
 while True:
-	log = open("C:\Travel Monitor\log.txt","a")
 	timestamp = time.strftime("\n%m/%d/%y %H:%M:")
-	log.write(timestamp.encode('utf-8'))
-	log.write('\nStill Running\n\n')
-	log.close()
 	print timestamp
 	print 'Still Running\n'
 	time.sleep(3600)

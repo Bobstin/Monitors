@@ -18,9 +18,7 @@ DatabaseURL = os.environ.get('DATABASE_URL')
 
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
-	timestamp = time.strftime("\n%m/%d/%y %H:%M:")
-	print timestamp.encode('utf-8')
-
+	
 	#Connects to the database, creates a cursor
 	if DatabaseURL=='127.0.0.1':
 		conn = psycopg2.connect(database="monitordb",user="tdfmonitor",password=DBPass,host=DatabaseURL,port="5432")
@@ -153,9 +151,16 @@ def waitonehour():
 	time.sleep((nextrun-currenttime).total_seconds())
 
 while True:
+	#Prints a timestamp
+	timestamp = time.strftime("%m/%d/%y %H:%M:")
+	print timestamp.encode('utf-8')
+
+	#Pulls the HTML from the TDF website
 	newhtml = TDFPull()
+
+	#Compares the current and previous shows
 	DetectNewShows(newhtml)
+
+	#Waits for an hour to check again
 	print "Going back to sleep\n"
 	waitonehour()
-
-print "end"

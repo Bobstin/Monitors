@@ -18,7 +18,7 @@ DatabaseURL = os.environ.get('DATABASE_URL')
 
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
-	timestamp = time.strftime("\n%m/%d/%y %H:%M:\n")
+	timestamp = time.strftime("\n%m/%d/%y %H:%M:")
 	print timestamp.encode('utf-8')
 
 	#Connects to the database, creates a cursor
@@ -87,7 +87,7 @@ def DetectNewShows(newhtml):
 		#Adds list of shows that were found
 		for show in showstosend:
 			emailbody = emailbody + "\t" + show[0] + "\n"
-			print show[0]+"\n"
+			print show[0]
 
 		emailbody = emailbody + "\nBest,\nTDF Monitor"
 
@@ -101,7 +101,7 @@ def DetectNewShows(newhtml):
 			send_email("tdfmonitor@gmail.com",GmailPass,email[0],"New show detected by TDF Monitor",emailbody)
 		
 	else:
-		print "No new shows detected\n"
+		print "No new shows detected"
 
 
 def TDFPull():
@@ -153,7 +153,6 @@ def waitonehour():
 	time.sleep((nextrun-currenttime).total_seconds())
 
 while True:
-	print datetime.datetime.today()
 	newhtml = TDFPull()
 	DetectNewShows(newhtml)
 	print "Going back to sleep\n"

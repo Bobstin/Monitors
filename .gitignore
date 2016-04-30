@@ -4,3 +4,4 @@ phantomjs/
 TDF_Scraper_localpass.py
 TDF_Scraper_localpass_DB_Version.py
 venv/
+ghostdriver.log

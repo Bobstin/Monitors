@@ -10,6 +10,10 @@ import datetime
 import os
 import psycopg2
 
+GmailPass = os.environ.get('GmailPass')
+DBPass = os.environ.get('DBPass')
+TDFPass = os.environ.get('TDFPass')
+
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
 	#opens the old html file and the log

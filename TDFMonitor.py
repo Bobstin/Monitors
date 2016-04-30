@@ -9,11 +9,12 @@ import smtplib
 import datetime
 import os
 import psycopg2
+import urlparse
 
 GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')
 TDFPass = os.environ.get('TDFPass')
-DatbaseURL = os.environ.get('DATABASE_URL')
+DatabaseURL = os.environ.get('DATABASE_URL')
 
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
@@ -21,8 +22,22 @@ def DetectNewShows(newhtml):
 	print timestamp.encode('utf-8')
 
 	#Connects to the database, creates a cursor
-	DBConn = psycopg2.connect(database="monitordb",user="tdfmonitor",password=DBPass,host=DatbaseURL,port="5432")
-	cur = DBConn.cursor()
+	if DatabaseURL=='127.0.0.1':
+		conn = psycopg2.connect(database="monitordb",user="tdfmonitor",password=DBPass,host=DatabaseURL,port="5432")
+	else:
+		urlparse.uses_netloc.append("postgres")
+		url = urlparse.urlparse(os.environ["DATABASE_URL"])
+
+		conn = psycopg2.connect(
+	    	database=url.path[1:],
+	   		user=url.username,
+	    	password=url.password,
+	    	host=url.hostname,
+	    	port=url.port
+		)
+
+	
+	cur = conn.cursor()
 	
 	#uses beautifulsoup to process the html
 	newprocessedhtml = BeautifulSoup(newhtml,'lxml')
@@ -62,7 +77,9 @@ def DetectNewShows(newhtml):
 	FROM latest_tdf_pull
 	WHERE tdf_shows.show_name = latest_tdf_pull.show_name;""")
 
-	DBConn.commit()
+	#Commits the changes to the database
+	conn.commit()
+
 	if len(showstosend) > 0:
 		#starts to draft the email
 		emailbody ="TDF Monitor has found a new show is being offered on TDF:\n\n"

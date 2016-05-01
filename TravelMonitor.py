@@ -43,8 +43,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 
 		try:
 			#Checks the tweet for each of the triggers
-			#if TweetAuthor == 'TheFlightDeal': WrittenByTFD = True
-			if TweetAuthor == 'bobstin': WrittenByTFD = True
+			if TweetAuthor == 'TheFlightDeal': WrittenByTFD = True
 			if any(x in LowerTweetText for x in AllKeywords): ContainsKeyWord = True
 			if any(x in LowerTweetText for x in NYCKeywords): ContainsNYCKeyWord = True
 			if any(x in LowerTweetText for x in SFKeywords): ContainsSFKeyWord = True
@@ -130,8 +129,7 @@ try:
 	FlightStatusListener = FlightStatusListenerClass()
 	FlightStatusStream = tweepy.Stream(auth = api.auth, listener = FlightStatusListener)
 	#Need to filter on the user ID of @TheFlightDeal
-	#FlightStatusStream.filter(follow=['352093320'], async = True)
-	FlightStatusStream.filter(follow=['46830140'], async = True)
+	FlightStatusStream.filter(follow=['352093320'], async = True)
 	
 except Exception as e:
 	print e

@@ -32,6 +32,8 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		WrittenByTFD = False
 		ContainsKeyWord = False
 		IsAReply = False
+		ContainsNYCKeyWord = False
+		ContainsSFKeyWord = False
 
 		#Sets the words to look for in each region
 		#NOTE: all keywords should be lower case
@@ -101,7 +103,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		if status_code == 420:
 			print 'I was disconnected by Twitter'
 			return False
-		
+
 
 
 def send_email(user, pwd, recipient, subject, body):

@@ -26,7 +26,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		TweetAuthor = status.author.screen_name.encode('ascii','ignore')
 		TweetText =  status.text.encode('ascii', 'ignore')
 		print TweetAuthor + ": " + TweetText
-		TweetText = TweetText.lower()
+		LowerTweetText = TweetText.lower()
 		
 		#Defaults all triggers to false
 		WrittenByTFD = False
@@ -38,16 +38,16 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		#Sets the words to look for in each region
 		#NOTE: all keywords should be lower case
 		NYCKeywords = ['new york','laguardia','lga','jfk','newark','ewr','nyc','ny']
-		SFKeywords = ['san Francisco','sfo','sjc','sf','oak']
+		SFKeywords = ['san francisco','sfo','sjc','sf','oak']
 		AllKeywords = NYCKeywords + SFKeywords
 
 		try:
 			#Checks the tweet for each of the triggers
 			#if TweetAuthor == 'TheFlightDeal': WrittenByTFD = True
 			if TweetAuthor == 'bobstin': WrittenByTFD = True
-			if any(x in TweetText for x in AllKeywords): ContainsKeyWord = True
-			if any(x in TweetText for x in NYCKeywords): ContainsNYCKeyWord = True
-			if any(x in TweetText for x in SFKeywords): ContainsSFKeyWord = True
+			if any(x in LowerTweetText for x in AllKeywords): ContainsKeyWord = True
+			if any(x in LowerTweetText for x in NYCKeywords): ContainsNYCKeyWord = True
+			if any(x in LowerTweetText for x in SFKeywords): ContainsSFKeyWord = True
 			if 	status.in_reply_to_status_id != None: IsAReply = True
 
 

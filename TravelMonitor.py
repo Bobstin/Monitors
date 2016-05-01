@@ -26,6 +26,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		TweetAuthor = status.author.screen_name.encode('ascii','ignore')
 		TweetText =  status.text.encode('ascii', 'ignore')
 		print TweetAuthor + ": " + TweetText
+		TweetText = TweetText.lower()
 		
 		#Defaults all triggers to false
 		WrittenByTFD = False
@@ -33,8 +34,9 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		IsAReply = False
 
 		#Sets the words to look for in each region
-		NYCKeywords = ['New York','Laguardia','LGA','JFK','Newark','EWR','NYC','NY']
-		SFKeywords = ['San Francisco','SFO','SJC','SF','OAK']
+		#NOTE: all keywords should be lower case
+		NYCKeywords = ['new york','laguardia','lga','jfk','newark','ewr','nyc','ny']
+		SFKeywords = ['san Francisco','sfo','sjc','sf','oak']
 		AllKeywords = NYCKeywords + SFKeywords
 
 		try:
@@ -52,7 +54,6 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 				print 'Emailing Tweet\n'
 				timestamp = time.strftime("\n%m/%d/%y %H:%M:")
 				print timestamp
-				log.write(timestamp.encode('utf-8')+'\n')
 
 				#Connects to the database to find what users to send the email to
 				if DatabaseURL=='127.0.0.1':

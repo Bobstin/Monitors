@@ -13,6 +13,7 @@ import urlparse
 
 GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')
+TDFUsername = os.environ.get('TDFUsername')
 TDFPass = os.environ.get('TDFPass')
 DatabaseURL = os.environ.get('DATABASE_URL')
 
@@ -110,7 +111,7 @@ def TDFPull():
 	driver.get('http://secure2.tdf.org')
 	username = driver.find_element_by_name('LOGON_EMAIL')
 	username.clear()
-	username.send_keys("***REMOVED***")
+	username.send_keys(TDFUsername)
 	username = driver.find_element_by_name('LOGON_PASSWORD')
 	username.send_keys(TDFPass)
 

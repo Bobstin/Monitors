@@ -97,7 +97,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		print 'Error code recieved'
 		print status_code
 		error_email_body = "There has been an error in the flight deal monitor, with error code " + str(status_code)
-		send_email("flightdealmonitor@gmail.com",TravelGmailPass,"***REMOVED***","ERROR: Flight Deal Monitor",error_email_body)
+		send_email("flightdealmonitor@gmail.com",TravelGmailPass,"flightdealmonitor@gmail.com","ERROR: Flight Deal Monitor",error_email_body)
 		if status_code == 420:
 			print 'I was disconnected by Twitter'
 			return False

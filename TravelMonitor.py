@@ -36,11 +36,11 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		NYCKeywords = ['New York','Laguardia','LGA','JFK','Newark','EWR','NYC','NY']
 		SFKeywords = ['San Francisco','SFO','SJC','SF','OAK']
 		AllKeywords = NYCKeywords + SFKeywords
-		print AllKeywords
 
 		try:
 			#Checks the tweet for each of the triggers
-			if TweetAuthor == 'TheFlightDeal': WrittenByTFD = True
+			#if TweetAuthor == 'TheFlightDeal': WrittenByTFD = True
+			if TweetAuthor == 'Bobstin': WrittenByTFD = True
 			if any(x in TweetText for x in AllKeywords): ContainsKeyWord = True
 			if any(x in TweetText for x in NYCKeywords): ContainsNYCKeyWord = True
 			if any(x in TweetText for x in SFKeywords): ContainsSFKeyWord = True

@@ -52,8 +52,6 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 			if WrittenByTFD and ContainsKeyWord and ~IsAReply:
 				#If the tweet was written by the flight deal, contains a keyword, and is not a reply, emails it out
 				print 'Emailing Tweet\n'
-				timestamp = time.strftime("\n%m/%d/%y %H:%M:")
-				print timestamp
 
 				#Connects to the database to find what users to send the email to
 				if DatabaseURL=='127.0.0.1':
@@ -75,17 +73,18 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 				#Constructs the body of the email
 				emailbody ="Flight Deal Monitor has found a deal on @TheFlightDeal:\n\n" + TweetText + '\n\nBest,\nFlight Deal Monitor'
 
+				#Sends the email, first to the NYC region, and then to SF
 				if ContainsNYCKeyWord:
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'NYC';""")
 					emails = cur.fetchall()
 					for email in emails:
-						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email,"New deal detected by Flight Deal Monitor",emailbody)
+						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
 
 				if ContainsSFKeyWord:
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'SF';""")
 					emails = cur.fetchall()
 					for email in emails:
-						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email,"New deal detected by Flight Deal Monitor",emailbody)
+						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
 
 			else:
 				print 'Ignoring Tweet\n'
@@ -102,6 +101,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		if status_code == 420:
 			print 'I was disconnected by Twitter'
 			return False
+		
 
 
 def send_email(user, pwd, recipient, subject, body):

@@ -34,6 +34,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		IsAReply = False
 		ContainsNYCKeyWord = False
 		ContainsSFKeyWord = False
+		IsADeal = False
 
 		#Sets the words to look for in each region
 		#NOTE: all keywords should be lower case
@@ -44,13 +45,17 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		try:
 			#Checks the tweet for each of the triggers
 			if TweetAuthor == 'TheFlightDeal': WrittenByTFD = True
+
 			if any(x in LowerTweetText for x in AllKeywords): ContainsKeyWord = True
 			if any(x in LowerTweetText for x in NYCKeywords): ContainsNYCKeyWord = True
 			if any(x in LowerTweetText for x in SFKeywords): ContainsSFKeyWord = True
+
 			if 	status.in_reply_to_status_id != None: IsAReply = True
 
+			if '#airfare deal' in LowerTweetText: IsADeal = True 
 
-			if WrittenByTFD and ContainsKeyWord and ~IsAReply:
+
+			if WrittenByTFD and ContainsKeyWord and ~IsAReply and IsADeal:
 				#If the tweet was written by the flight deal, contains a keyword, and is not a reply, emails it out
 				print 'Emailing Tweet\n'
 

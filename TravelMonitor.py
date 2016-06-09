@@ -52,8 +52,13 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 
 			if 	status.in_reply_to_status_id != None: IsAReply = True
 
-			if '#airfare deal' in LowerTweetText: IsADeal = True 
+			if '#airfare deal' in LowerTweetText: IsADeal = True
 
+			print 'WrittenByTFD:'+WrittenByTFD
+			print 'ContainsKeyWord:'+ContainsKeyWord
+			print 'IsAReply:'+IsAReply
+			print 'IsADeal:'+IsADeal
+			print ' '
 
 			if WrittenByTFD and ContainsKeyWord and ~IsAReply and IsADeal:
 				#If the tweet was written by the flight deal, contains a keyword, and is not a reply, emails it out

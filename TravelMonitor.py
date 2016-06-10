@@ -54,10 +54,10 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 
 			if '#airfare deal' in LowerTweetText: IsADeal = True
 
-			print 'WrittenByTFD:'+WrittenByTFD
-			print 'ContainsKeyWord:'+ContainsKeyWord
-			print 'IsAReply:'+IsAReply
-			print 'IsADeal:'+IsADeal
+			print 'WrittenByTFD:'+str(WrittenByTFD)
+			print 'ContainsKeyWord:'+str(ContainsKeyWord)
+			print 'IsAReply:'+str(IsAReply)
+			print 'IsADeal:'+str(IsADeal)
 			print ' '
 
 			if WrittenByTFD and ContainsKeyWord and ~IsAReply and IsADeal:

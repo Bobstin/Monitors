@@ -38,7 +38,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 
 		#Sets the words to look for in each region
 		#NOTE: all keywords should be lower case
-		NYCKeywords = ['new york','laguardia','lga','jfk','newark','ewr','nyc','ny']
+		NYCKeywords = ['new york','laguardia','lga','jfk','newark','ewr','nyc',' ny ']
 		SFKeywords = ['san francisco','sfo','sjc','sf','oak']
 		AllKeywords = NYCKeywords + SFKeywords
 

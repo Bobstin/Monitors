@@ -108,6 +108,10 @@ def TDFPull():
 	#Go to website and login
 	#driver = webdriver.Ie()
 	driver = webdriver.PhantomJS()
+
+	#Waits 5 seconds before giving up on finding elements
+	driver.implicitly_wait(5)
+
 	driver.get('http://secure2.tdf.org')
 	username = driver.find_element_by_name('LOGON_EMAIL')
 	username.clear()

@@ -1,9 +1,11 @@
 import tweepy
 import time
-import smtplib
 import os
 import psycopg2
 import urlparse
+import datetime
+import sendgrid
+from sendgrid.helpers.mail import *
 
 consumer_key = 	os.environ.get('consumer_key')
 consumer_secret = 	os.environ.get('consumer_secret')
@@ -112,26 +114,6 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 			print 'I was disconnected by Twitter'
 			return False
 
-
-
-def send_email(user, pwd, recipient, subject, body):
-	gmail_user = user
-	gmail_pwd = pwd
-	FROM = user
-	TO = recipient if type(recipient) is list else [recipient]
-	SUBJECT = subject
-	TEXT = body
-
-	# Prepare actual message
-	message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
-	""" % (FROM, ", ".join(TO), SUBJECT, TEXT)
-
-	server_ssl = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-	server_ssl.ehlo() # optional, called by login()
-	server_ssl.login(gmail_user, gmail_pwd)  
-	server_ssl.sendmail(FROM, TO, message)
-	server_ssl.close()
-	#print 'successfully sent the email'
 
 def SendGrid_Email(user,recipient,subject,body):
 	sg = sendgrid.SendGridAPIClient(apikey=SendGridAPIKey)

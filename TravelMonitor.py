@@ -88,13 +88,13 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'NYC';""")
 					emails = cur.fetchall()
 					for email in emails:
-						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
+						SendGrid_Email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
 
 				if ContainsSFKeyWord:
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'SF';""")
 					emails = cur.fetchall()
 					for email in emails:
-						send_email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
+						SendGrid_Email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
 
 			else:
 				print 'Ignoring Tweet\n'
@@ -107,7 +107,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 		print 'Error code recieved'
 		print status_code
 		error_email_body = "There has been an error in the flight deal monitor, with error code " + str(status_code)
-		send_email("flightdealmonitor@gmail.com",TravelGmailPass,"flightdealmonitor@gmail.com","ERROR: Flight Deal Monitor",error_email_body)
+		SendGrid_Email("flightdealmonitor@gmail.com",TravelGmailPass,"flightdealmonitor@gmail.com","ERROR: Flight Deal Monitor",error_email_body)
 		if status_code == 420:
 			print 'I was disconnected by Twitter'
 			return False
@@ -132,6 +132,17 @@ def send_email(user, pwd, recipient, subject, body):
 	server_ssl.sendmail(FROM, TO, message)
 	server_ssl.close()
 	#print 'successfully sent the email'
+
+def SendGrid_Email(user,recipient,subject,body):
+	sg = sendgrid.SendGridAPIClient(apikey=SendGridAPIKey)
+	from_email = Email(user)
+	to_email = Email(recipient)
+	content = Content("text/plain",body)
+	mail = Mail(from_email,subject,to_email,content)
+	response = sg.client.mail.send.post(request_body=mail.get())
+	print(response.status_code)
+	print(response.body)
+	print(response.headers)
 
 
 try:

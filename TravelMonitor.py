@@ -159,4 +159,10 @@ while True:
 	timestamp = time.strftime("\n%m/%d/%y %H:%M:")
 	print timestamp
 	print 'Still Running\n'
-	time.sleep(3600)
+
+	#Waits until the top of the next hour to print the still running message
+	currenttime = datetime.datetime.today()
+	roundedtime = datetime.datetime(currenttime.year,currenttime.month,currenttime.day,currenttime.hour)
+	waittime = datetime.timedelta(hours = 1)
+	nextrun = roundedtime + waittime
+	time.sleep((nextrun-currenttime).total_seconds())

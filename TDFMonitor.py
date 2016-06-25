@@ -19,6 +19,16 @@ DatabaseURL = os.environ.get('DATABASE_URL')
 SendGridPass=os.environ.get('SENDGRID_PASSWORD')
 SendGridUsername=os.environ.get('SENDGRID_USERNAME')
 
+def SendGrid_Email(user,recipient,subject,body):
+	sg = sendGrid.SendGridClient(SendGridUsername,SendGridPass)
+	message = sendgrid.Mail()
+	message.add_to(recipient)
+	message.set_subject(subject)
+	message.set_text(body)
+	message.set_from(user)
+	status, msg = sg.send(message)
+
+
 def DetectNewShows(newhtml):
 	print "Checking for new shows"
 	
@@ -99,7 +109,7 @@ def DetectNewShows(newhtml):
 		#Sends the email
 		#print emailbody
 		for email in emails:
-			send_email("tdfmonitor@gmail.com",GmailPass,email[0],"New show detected by TDF Monitor",emailbody)
+			SendGrid_Email("tdfmonitor@gmail.com",email[0],"New show detected by TDF Monitor",emailbody)
 		
 	else:
 		print "No new shows detected"

@@ -16,6 +16,8 @@ DBPass = os.environ.get('DBPass')
 TDFUsername = os.environ.get('TDFUsername')
 TDFPass = os.environ.get('TDFPass')
 DatabaseURL = os.environ.get('DATABASE_URL')
+SendGridPass=os.environ.get('SENDGRID_PASSWORD')
+SendGridUsername=os.environ.get('SENDGRID_USERNAME')
 
 def DetectNewShows(newhtml):
 	print "Checking for new shows"

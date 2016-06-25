@@ -141,25 +141,6 @@ def TDFPull():
 	driver.quit()
 	return allshows	
 
-def send_email(user, pwd, recipient, subject, body):
-	print "Sending Email"
-	gmail_user = user
-	gmail_pwd = pwd
-	FROM = user
-	TO = recipient if type(recipient) is list else [recipient]
-	SUBJECT = subject
-	TEXT = body
-
-	# Prepare actual message
-	message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
-	""" % (FROM, ", ".join(TO), SUBJECT, TEXT)
-
-	server_ssl = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-	server_ssl.ehlo() # optional, called by login()
-	server_ssl.login(gmail_user, gmail_pwd)  
-	server_ssl.sendmail(FROM, TO, message)
-	server_ssl.close()
-	#print 'successfully sent the mail'
 
 def waitonehour():
 	#Calculates the next run time (top of the next hour). 

@@ -10,6 +10,7 @@ import datetime
 import os
 import psycopg2
 import urlparse
+import sendgrid
 
 GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')

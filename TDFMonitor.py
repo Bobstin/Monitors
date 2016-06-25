@@ -11,23 +11,25 @@ import os
 import psycopg2
 import urlparse
 import sendgrid
+from sendgrid.helpers.mail import *
 
 GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')
 TDFUsername = os.environ.get('TDFUsername')
 TDFPass = os.environ.get('TDFPass')
 DatabaseURL = os.environ.get('DATABASE_URL')
-SendGridPass=os.environ.get('SENDGRID_PASSWORD')
-SendGridUsername=os.environ.get('SENDGRID_USERNAME')
+SendGridAPIKey=os.environ.get('SENDGRID_API_KEY')
 
 def SendGrid_Email(user,recipient,subject,body):
-	sg = sendgrid.SendGridClient(SendGridUsername,SendGridPass)
-	message = sendgrid.Mail()
-	message.add_to(recipient)
-	message.set_subject(subject)
-	message.set_text(body)
-	message.set_from(user)
-	status, msg = sg.send(message)
+	sg = sendgrid.SendGridAPIClient(apikey=SendGridAPIKey)
+	from_email = Email(user)
+	to_email = Email(recipient)
+	content = Content("text/plain",body)
+	mail = Mail(from_email,subject,to_email,content)
+	response = sg.client.mail.send.post(request_body=mail.get())
+	print(response.status_code)
+	print(response.body)
+	print(response.headers)
 
 
 def DetectNewShows(newhtml):

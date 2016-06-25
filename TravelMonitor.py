@@ -20,8 +20,6 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 
-#testing auto deploy
-
 class FlightStatusListenerClass(tweepy.StreamListener):
 
 	def on_status(self, status):

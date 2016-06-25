@@ -21,7 +21,7 @@ SendGridPass=os.environ.get('SENDGRID_PASSWORD')
 SendGridUsername=os.environ.get('SENDGRID_USERNAME')
 
 def SendGrid_Email(user,recipient,subject,body):
-	sg = sendGrid.SendGridClient(SendGridUsername,SendGridPass)
+	sg = sendgrid.SendGridClient(SendGridUsername,SendGridPass)
 	message = sendgrid.Mail()
 	message.add_to(recipient)
 	message.set_subject(subject)

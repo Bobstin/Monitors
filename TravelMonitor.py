@@ -90,13 +90,13 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'NYC';""")
 					emails = cur.fetchall()
 					for email in emails:
-						SendGrid_Email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
+						SendGrid_Email("flightdealmonitor@gmail.com",email[0],"New deal detected by Flight Deal Monitor",emailbody)
 
 				if ContainsSFKeyWord:
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'SF';""")
 					emails = cur.fetchall()
 					for email in emails:
-						SendGrid_Email("flightdealmonitor@gmail.com",TravelGmailPass,email[0],"New deal detected by Flight Deal Monitor",emailbody)
+						SendGrid_Email("flightdealmonitor@gmail.com",email[0],"New deal detected by Flight Deal Monitor",emailbody)
 
 			else:
 				print 'Ignoring Tweet\n'

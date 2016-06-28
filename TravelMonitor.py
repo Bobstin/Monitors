@@ -17,6 +17,8 @@ TravelGmailPass = os.environ.get('TravelGmailPass')
 
 DatabaseURL = os.environ.get('DATABASE_URL')
 
+SendGridAPIKey=os.environ.get('SENDGRID_API_KEY')
+
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 

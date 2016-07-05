@@ -63,9 +63,17 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 			#print 'IsAReply:'+str(IsAReply)
 			#print 'IsADeal:'+str(IsADeal)
 
+			DestStart=TweetText.find("-")
+			if DestStart != -1: DestEnd=TweetText.find(".",DestStart)
+			if DestEnd != -1: print  TweetText[DestStart:DestEnd]
+
+
 			if WrittenByTFD and ContainsKeyWord and ~IsAReply and IsADeal:
 				#If the tweet was written by the flight deal, contains a keyword, and is not a reply, emails it out
 				print 'Emailing Tweet\n'
+
+				
+
 
 				#Connects to the database to find what users to send the email to
 				if DatabaseURL=='127.0.0.1':
@@ -84,21 +92,25 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 
 				cur = conn.cursor()
 
-				#Constructs the body of the email
+				#Constructs the body and subject of the email
 				emailbody ="Flight Deal Monitor has found a deal on @TheFlightDeal:\n\n" + TweetText + '\n\nBest,\nFlight Deal Monitor'
+				if DestStart!=-1 and DestEnd !=-1:
+					Subject = "New deal detected by Flight Deal Monitor:"+TweetText[DestStart:DestEnd]
+				else
+					Subject = "New deal detected by Flight Deal Monitor"
 
 				#Sends the email, first to the NYC region, and then to SF
 				if ContainsNYCKeyWord:
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'NYC';""")
 					emails = cur.fetchall()
 					for email in emails:
-						SendGrid_Email("flightdealmonitor@gmail.com",email[0],"New deal detected by Flight Deal Monitor",emailbody)
+						SendGrid_Email("flightdealmonitor@gmail.com",email[0],Subject,emailbody)
 
 				if ContainsSFKeyWord:
 					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'SF';""")
 					emails = cur.fetchall()
 					for email in emails:
-						SendGrid_Email("flightdealmonitor@gmail.com",email[0],"New deal detected by Flight Deal Monitor",emailbody)
+						SendGrid_Email("flightdealmonitor@gmail.com",email[0],Subject,emailbody)
 
 			else:
 				print 'Ignoring Tweet\n'

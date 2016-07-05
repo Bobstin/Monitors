@@ -72,9 +72,6 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 				#If the tweet was written by the flight deal, contains a keyword, and is not a reply, emails it out
 				print 'Emailing Tweet\n'
 
-				
-
-
 				#Connects to the database to find what users to send the email to
 				if DatabaseURL=='127.0.0.1':
 					conn = psycopg2.connect(database="monitordb",user="tdfmonitor",password=DBPass,host=DatabaseURL,port="5432")
@@ -95,7 +92,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 				#Constructs the body and subject of the email
 				emailbody ="Flight Deal Monitor has found a deal on @TheFlightDeal:\n\n" + TweetText + '\n\nBest,\nFlight Deal Monitor'
 				if DestStart!=-1 and DestEnd !=-1:
-					Subject = "New deal detected by Flight Deal Monitor:"+TweetText[DestStart+2:DestEnd]
+					Subject = "New deal detected by Flight Deal Monitor: "+TweetText[DestStart+2:DestEnd]
 				else:
 					Subject = "New deal detected by Flight Deal Monitor"
 

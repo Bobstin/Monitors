@@ -65,7 +65,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 
 			DestStart=TweetText.find("-")
 			if DestStart != -1: DestEnd=TweetText.find(".",DestStart)
-			if DestEnd != -1: print  TweetText[DestStart:DestEnd]
+			if DestEnd != -1: print  TweetText[DestStart+2:DestEnd]
 
 
 			if WrittenByTFD and ContainsKeyWord and ~IsAReply and IsADeal:
@@ -95,7 +95,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 				#Constructs the body and subject of the email
 				emailbody ="Flight Deal Monitor has found a deal on @TheFlightDeal:\n\n" + TweetText + '\n\nBest,\nFlight Deal Monitor'
 				if DestStart!=-1 and DestEnd !=-1:
-					Subject = "New deal detected by Flight Deal Monitor:"+TweetText[DestStart:DestEnd]
+					Subject = "New deal detected by Flight Deal Monitor:"+TweetText[DestStart+2:DestEnd]
 				else:
 					Subject = "New deal detected by Flight Deal Monitor"
 

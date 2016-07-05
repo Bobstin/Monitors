@@ -96,7 +96,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 				emailbody ="Flight Deal Monitor has found a deal on @TheFlightDeal:\n\n" + TweetText + '\n\nBest,\nFlight Deal Monitor'
 				if DestStart!=-1 and DestEnd !=-1:
 					Subject = "New deal detected by Flight Deal Monitor:"+TweetText[DestStart:DestEnd]
-				else
+				else:
 					Subject = "New deal detected by Flight Deal Monitor"
 
 				#Sends the email, first to the NYC region, and then to SF

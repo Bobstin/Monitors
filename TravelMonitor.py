@@ -67,10 +67,13 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 			#Looks for a "-" as the start of the destination, and
 			#ends it at "(" or a ". $", whatever comes first
 			DestStart=TweetText.find("-")
-			if TweetText.find(". $",DestStart)!=-1 and TweetText.find("(",DestStart)!=-1:
-				DestEnd=min(TweetText.find(". $",DestStart),TweetText.find("(",DestStart))
+			if TweetText.find(". $",DestStart)!=-1:
+				if TweetText.find("(",DestStart)!=-1:
+					DestEnd=min(TweetText.find(". $",DestStart),TweetText.find("(",DestStart))
+				else:
+					DestEnd=TweetText.find(". $",DestStart)
 			else:
-				DestEnd=TweetText.find(". $",DestStart)
+				DestEnd=TweetText.find("(",DestStart)
 			
 			if DestEnd != -1: print  TweetText[DestStart+2:DestEnd]
 

@@ -147,7 +147,7 @@ try:
 		time.sleep(30)
 		StartUpTime = StartUpTime +30
 		if StartUpTime < 300: print "Still waiting, " + str(300-StartUpTime) + " seconds remaining"
-		if StartUpTime = 300: print "Done waiting!"
+		if StartUpTime == 300: print "Done waiting!"
 
 	#Connects to Twitter streaming API
 	print "Connecting to Twitter streaming api"

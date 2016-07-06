@@ -64,7 +64,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 			#print 'IsADeal:'+str(IsADeal)
 
 			DestStart=TweetText.find("-")
-			DestEnd=TweetText.find(".",DestStart)
+			DestEnd=min(TweetText.find(".",DestStart),TweetText.find("(",DestStart))
 			if DestEnd != -1: print  TweetText[DestStart+2:DestEnd]
 
 

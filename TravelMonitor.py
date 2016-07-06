@@ -140,9 +140,16 @@ def SendGrid_Email(user,recipient,subject,body):
 
 try:
 	#Waits 15 seconds, so that restarting doesn't trigger a 420 error
-	time.sleep(15)
+	print "Waiting 15 seconds to avoid 420 error"
+	time.sleep(5)
+	print "5"
+	time.sleep(5)
+	print "10"
+	time.sleep(5)
+	print "15"
 
 	#Connects to Twitter streaming API
+	print "Connecting to Twitter streaming api"
 	FlightStatusListener = FlightStatusListenerClass()
 	FlightStatusStream = tweepy.Stream(auth = api.auth, listener = FlightStatusListener)
 

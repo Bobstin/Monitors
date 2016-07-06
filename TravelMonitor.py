@@ -64,7 +64,7 @@ class FlightStatusListenerClass(tweepy.StreamListener):
 			#print 'IsADeal:'+str(IsADeal)
 
 			DestStart=TweetText.find("-")
-			DestEnd=min(TweetText.find(".",DestStart),TweetText.find("(",DestStart))
+			DestEnd=min(TweetText.find(". $",DestStart),TweetText.find("(",DestStart))
 			if DestEnd != -1: print  TweetText[DestStart+2:DestEnd]
 
 
@@ -139,8 +139,13 @@ def SendGrid_Email(user,recipient,subject,body):
 
 
 try:
+	#Waits 15 seconds, so that restarting doesn't trigger a 420 error
+	time.sleep(15)
+
+	#Connects to Twitter streaming API
 	FlightStatusListener = FlightStatusListenerClass()
 	FlightStatusStream = tweepy.Stream(auth = api.auth, listener = FlightStatusListener)
+
 	#Need to filter on the user ID of @TheFlightDeal
 	FlightStatusStream.filter(follow=['352093320'], async = True)
 	

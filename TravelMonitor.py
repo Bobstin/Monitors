@@ -139,14 +139,15 @@ def SendGrid_Email(user,recipient,subject,body):
 
 
 try:
-	#Waits 65 seconds, so that restarting doesn't trigger a 420 error
-	print "Waiting 65 seconds to avoid 420 (rate limiting) error"
+	#Waits 5 minutes, so that restarting doesn't trigger a 420 error
+	print "Waiting 5 minutes to avoid 420 (rate limiting) error"
 	StartUpTime = 0
 	
-	while StartUpTime <= 65:
-		time.sleep(5)
-		StartUpTime = StartUpTime +5
-		print StartUpTime
+	while StartUpTime <= 270:
+		time.sleep(30)
+		StartUpTime = StartUpTime +30
+		if StartUpTime < 300: print "Still waiting, " + str(300-StartUpTime) + " seconds remaining"
+		if StartUpTime = 300: print "Done waiting!"
 
 	#Connects to Twitter streaming API
 	print "Connecting to Twitter streaming api"

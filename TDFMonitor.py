@@ -9,11 +9,11 @@ import smtplib
 import datetime
 import os
 import psycopg2
-import urlparse
+import urllib.parse as urlparse
 import sendgrid
 from sendgrid.helpers.mail import *
 
-GmailPass = os.environ.get('GmailPass')
+#GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')
 TDFUsername = os.environ.get('TDFUsername')
 TDFPass = os.environ.get('TDFPass')
@@ -33,7 +33,7 @@ def SendGrid_Email(user,recipient,subject,body):
 
 
 def DetectNewShows(newhtml):
-	print "Checking for new shows"
+	print ("Checking for new shows")
 	
 	#Connects to the database, creates a cursor
 	if DatabaseURL=='127.0.0.1':
@@ -54,7 +54,7 @@ def DetectNewShows(newhtml):
 	cur = conn.cursor()
 	
 	#uses beautifulsoup to process the html
-	newprocessedhtml = BeautifulSoup(newhtml,'lxml')
+	newprocessedhtml = BeautifulSoup(newhtml,'html')
 	
 	#parses the html for the show names
 	newshows = newprocessedhtml.find_all('div',class_='ListingShowTitle')
@@ -101,7 +101,7 @@ def DetectNewShows(newhtml):
 		#Adds list of shows that were found
 		for show in showstosend:
 			emailbody = emailbody + "\t" + show[0] + "\n"
-			print show[0]
+			print(show[0])
 
 		emailbody = emailbody + "\nBest,\nTDF Monitor"
 
@@ -115,11 +115,11 @@ def DetectNewShows(newhtml):
 			SendGrid_Email("tdfmonitor@gmail.com",email[0],"New show detected by TDF Monitor",emailbody)
 		
 	else:
-		print "No new shows detected"
+		print("No new shows detected")
 
 
 def TDFPull():
-	print "Pulling html from TDF"
+	print("Pulling html from TDF")
 	#Go to website and login
 	#driver = webdriver.Ie()
 	driver = webdriver.PhantomJS()
@@ -154,7 +154,7 @@ def waitonehour():
 while True:
 	#Prints a timestamp
 	timestamp = time.strftime("%m/%d/%y %H:%M:")
-	print timestamp.encode('utf-8')
+	print (timestamp.encode('utf-8'))
 
 	#Pulls the HTML from the TDF website
 	newhtml = TDFPull()
@@ -163,5 +163,5 @@ while True:
 	DetectNewShows(newhtml)
 
 	#Waits for an hour to check again
-	print "Going back to sleep\n"
+	print ("Going back to sleep\n")
 	waitonehour()

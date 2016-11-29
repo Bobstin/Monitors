@@ -1,2 +1,2 @@
 TDF: python TDFMonitor.py
-Travel: python TravelMonitor.py
+Travel: python -u TravelMonitor.py

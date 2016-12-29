@@ -19,6 +19,7 @@ TDFUsername = os.environ.get('TDFUsername')
 TDFPass = os.environ.get('TDFPass')
 DatabaseURL = os.environ.get('DATABASE_URL')
 SendGridAPIKey=os.environ.get('SENDGRID_API_KEY')
+TimePastHour=os.environ.get('TimePastHour')
 
 def SendGrid_Email(user,recipient,subject,body):
 	sg = sendgrid.SendGridAPIClient(apikey=SendGridAPIKey)
@@ -54,7 +55,7 @@ def DetectNewShows(newhtml):
 	cur = conn.cursor()
 	
 	#uses beautifulsoup to process the html
-	newprocessedhtml = BeautifulSoup(newhtml,'html')
+	newprocessedhtml = BeautifulSoup(newhtml,'lxml')
 	
 	#parses the html for the show names
 	newshows = newprocessedhtml.find_all('div',class_='ListingShowTitle')
@@ -149,7 +150,7 @@ def waitonehour():
 	roundedtime = datetime.datetime(currenttime.year,currenttime.month,currenttime.day,currenttime.hour)
 	waittime = datetime.timedelta(hours = 1)
 	nextrun = roundedtime + waittime
-	time.sleep((nextrun-currenttime).total_seconds())
+	time.sleep((nextrun-currenttime).total_seconds()+int(TimePastHour)*60)
 
 while True:
 	#Prints a timestamp

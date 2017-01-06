@@ -50,6 +50,7 @@ class FlightStatusListenerClass(TwythonStreamer):
 		#NOTE: all keywords should be lower case
 		NYCKeywords = ['new york','laguardia','lga','jfk','newark','ewr','nyc',' ny ','business']
 		SFKeywords = ['san francisco','sfo','sjc','sf','oak','business']
+		BostonKeywords = ['boston','logan','bos','business']
 		AllKeywords = NYCKeywords + SFKeywords
 
 		try:
@@ -176,7 +177,8 @@ try:
 	
 except Exception as e:
 	print (e)
-	print ("this is where the error is being caught")
+	print ("This is where the error is being caught")
+	raise
 
 while True:
 	timestamp = time.strftime("\n%m/%d/%y %H:%M:")

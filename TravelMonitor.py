@@ -48,27 +48,33 @@ class FlightStatusListenerClass(TwythonStreamer):
 
 		#Sets the words to look for in each region
 		#NOTE: all keywords should be lower case
-		NYCKeywords = ['new york','laguardia','lga','jfk','newark','ewr','nyc',' ny ','business']
-		SFKeywords = ['san francisco','sfo','sjc','sf','oak','business']
-		BostonKeywords = ['boston','logan','bos','business']
-		AllKeywords = NYCKeywords + SFKeywords
+		AllKeywords = {
+			"NYC":['new york','laguardia','lga','jfk','newark','ewr','nyc',' ny ','business'],
+			"SF":['san francisco','sfo','sjc','sf','oak','business'],
+			"Boston":['boston','logan','bos','business'],
+		}
+
+
 
 		try:
 			#Checks the tweet for each of the triggers
+			#Checks if the author is TheFlightDeal
 			if TweetAuthor == TargetAuthor: WrittenByTFD = True
 
-			if any(x in LowerTweetText for x in AllKeywords): ContainsKeyWord = True
-			if any(x in LowerTweetText for x in NYCKeywords): ContainsNYCKeyWord = True
-			if any(x in LowerTweetText for x in SFKeywords): ContainsSFKeyWord = True
+			#Checks to see if any keywords are present
+			if any(any(Key in LowerTweetText for Key in LocationKeywords) for LocationKeywords in AllKeywords.values()): ContainsKeyWord = True
 
+			#Ignores replies
 			if 	status['in_reply_to_status_id'] != None: IsAReply = True
 
+			#must have the hashtag airfaire deal
 			if '#airfare deal' in LowerTweetText: IsADeal = True
 
-			#print 'WrittenByTFD:'+str(WrittenByTFD)
-			#print 'ContainsKeyWord:'+str(ContainsKeyWord)
-			#print 'IsAReply:'+str(IsAReply)
-			#print 'IsADeal:'+str(IsADeal)
+			#Uncomment the lines below to help with debugging
+			#print ('WrittenByTFD:'+str(WrittenByTFD))
+			#print ('ContainsKeyWord:'+str(ContainsKeyWord))
+			#print ('IsAReply:'+str(IsAReply))
+			#print ('IsADeal:'+str(IsADeal))
 
 			#Isolates the destination from the tweet
 			#Looks for a "-" as the start of the destination, and
@@ -90,6 +96,7 @@ class FlightStatusListenerClass(TwythonStreamer):
 				print('Emailing Tweet\n')
 
 				#Connects to the database to find what users to send the email to
+				#Uses a local database if needed
 				if DatabaseURL=='127.0.0.1':
 					conn = psycopg2.connect(database="monitordb",user="tdfmonitor",password=DBPass,host=DatabaseURL,port="5432")
 				else:
@@ -113,19 +120,13 @@ class FlightStatusListenerClass(TwythonStreamer):
 				else:
 					Subject = "New deal detected by Flight Deal Monitor"
 
-				#Sends the email, first to the NYC region, and then to SF
-				if ContainsNYCKeyWord:
-					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'NYC';""")
-					emails = cur.fetchall()
-					for email in emails:
-						SendGrid_Email("flightdealmonitor@gmail.com",email[0],Subject,emailbody)
-
-				if ContainsSFKeyWord:
-					cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = 'SF';""")
-					emails = cur.fetchall()
-					for email in emails:
-						SendGrid_Email("flightdealmonitor@gmail.com",email[0],Subject,emailbody)
-
+				#Sends the email, looping through all of the regions where a keyword was found
+				for Region in AllKeywords:
+					if any(Key in LowerTweetText for Key in AllKeywords[Region]):
+						cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = '{}';""".format(Region))
+						emails = cur.fetchall()
+						for email in emails:
+							SendGrid_Email("flightdealmonitor@gmail.com",email[0],Subject,emailbody)
 			else:
 				print('Ignoring Tweet\n')
 
@@ -133,9 +134,10 @@ class FlightStatusListenerClass(TwythonStreamer):
 			print (e)
 
 
-	def on_error(self,status_code):
+	def on_error(self,status_code,data):
 		print ('Error code recieved')
 		print (status_code)
+		print (data)
 		error_email_body = "There has been an error in the flight deal monitor, with error code " + str(status_code)
 		SendGrid_Email("flightdealmonitor@gmail.com","flightdealmonitor@gmail.com","ERROR: Flight Deal Monitor",error_email_body)
 		if status_code == 420:

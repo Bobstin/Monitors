@@ -125,6 +125,9 @@ class FlightStatusListenerClass(TwythonStreamer):
 					if any(Key in LowerTweetText for Key in AllKeywords[Region]):
 						cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = '{}';""".format(Region))
 						emails = cur.fetchall()
+						print(emails)
+						print(emailbody)
+						print(Subject)
 						for email in emails:
 							SendGrid_Email("flightdealmonitor@gmail.com",email[0],Subject,emailbody)
 			else:

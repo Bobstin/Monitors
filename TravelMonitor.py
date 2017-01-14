@@ -31,10 +31,9 @@ class FlightStatusListenerClass(TwythonStreamer):
 
 	def on_success(self, status):
 		#print(status)
-		#TweetAuthor = status.author.screen_name.encode('ascii','ignore')
-		#TweetText =  status.text.encode('ascii', 'ignore')
-		TweetAuthor = status['user']['screen_name']
-		TweetText =  status['text']
+		#Defaults to '' in case that the status doesn't have the required element
+		TweetAuthor = status.get('user','')
+		TweetText =  status.get('text','')
 		print (TweetAuthor + ": " + TweetText)
 		LowerTweetText = TweetText.lower()
 		
@@ -65,16 +64,16 @@ class FlightStatusListenerClass(TwythonStreamer):
 			if any(any(Key in LowerTweetText for Key in LocationKeywords) for LocationKeywords in AllKeywords.values()): ContainsKeyWord = True
 
 			#Ignores replies
-			if 	status['in_reply_to_status_id'] != None: IsAReply = True
+			if 	status.get('in_reply_to_status_id','') != None: IsAReply = True
 
 			#must have the hashtag airfaire deal
 			if '#airfare deal' in LowerTweetText: IsADeal = True
 
 			#Uncomment the lines below to help with debugging
-			#print ('WrittenByTFD:'+str(WrittenByTFD))
-			#print ('ContainsKeyWord:'+str(ContainsKeyWord))
-			#print ('IsAReply:'+str(IsAReply))
-			#print ('IsADeal:'+str(IsADeal))
+			print ('WrittenByTFD:'+str(WrittenByTFD))
+			print ('ContainsKeyWord:'+str(ContainsKeyWord))
+			print ('IsAReply:'+str(IsAReply))
+			print ('IsADeal:'+str(IsADeal))
 
 			#Isolates the destination from the tweet
 			#Looks for a "-" as the start of the destination, and
@@ -93,7 +92,7 @@ class FlightStatusListenerClass(TwythonStreamer):
 
 			if WrittenByTFD and ContainsKeyWord and ~IsAReply and IsADeal:
 				#If the tweet was written by the flight deal, contains a keyword, and is not a reply, emails it out
-				print('Emailing Tweet\n')
+				print('Emailing Tweet - ' + TweetAuthor + ": " + TweetText + '\n')
 
 				#Connects to the database to find what users to send the email to
 				#Uses a local database if needed
@@ -125,13 +124,13 @@ class FlightStatusListenerClass(TwythonStreamer):
 					if any(Key in LowerTweetText for Key in AllKeywords[Region]):
 						cur.execute("""SELECT email FROM users WHERE want_travel ='t' AND travel_region = '{}';""".format(Region))
 						emails = cur.fetchall()
-						print(emails)
-						print(emailbody)
-						print(Subject)
+						#print(emails)
+						#print(emailbody)
+						#print(Subject)
 						for email in emails:
 							SendGrid_Email("flightdealmonitor@gmail.com",email[0],Subject,emailbody)
 			else:
-				print('Ignoring Tweet\n')
+				print('Ignoring Tweet - ' + TweetAuthor + ": " + TweetText + '\n')
 
 		except Exception as e:
 			print (e)

@@ -32,9 +32,8 @@ class FlightStatusListenerClass(TwythonStreamer):
 	def on_success(self, status):
 		#print(status)
 		#Defaults to '' in case that the status doesn't have the required element
-		TweetAuthor = status.get('user','')
+		TweetAuthor = status.get('user',{'screen_name':''}).get('screen_name','')
 		TweetText =  status.get('text','')
-		print (TweetAuthor + ": " + TweetText)
 		LowerTweetText = TweetText.lower()
 		
 		#Defaults all triggers to false
@@ -70,10 +69,10 @@ class FlightStatusListenerClass(TwythonStreamer):
 			if '#airfare deal' in LowerTweetText: IsADeal = True
 
 			#Uncomment the lines below to help with debugging
-			print ('WrittenByTFD:'+str(WrittenByTFD))
-			print ('ContainsKeyWord:'+str(ContainsKeyWord))
-			print ('IsAReply:'+str(IsAReply))
-			print ('IsADeal:'+str(IsADeal))
+			#print ('WrittenByTFD:'+str(WrittenByTFD))
+			#print ('ContainsKeyWord:'+str(ContainsKeyWord))
+			#print ('IsAReply:'+str(IsAReply))
+			#print ('IsADeal:'+str(IsADeal))
 
 			#Isolates the destination from the tweet
 			#Looks for a "-" as the start of the destination, and

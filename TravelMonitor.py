@@ -50,6 +50,7 @@ class FlightStatusListenerClass(TwythonStreamer):
 			"NYC":['new york','laguardia','lga','jfk','newark','ewr','nyc',' ny ','business'],
 			"SF":['san francisco','sfo','sjc','sf','oak','business'],
 			"Boston":['boston','logan','bos','business'],
+			"Chicago":['chicago','ord','mdw','business']
 		}
 
 

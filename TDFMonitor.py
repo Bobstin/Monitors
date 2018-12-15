@@ -1,17 +1,14 @@
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select, WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.common.by import By
 import time
-from bs4 import BeautifulSoup
+import bs4
 import smtplib
 import datetime
 import os
 import psycopg2
 import urllib.parse as urlparse
 import sendgrid
-from sendgrid.helpers.mail import *
+from sendgrid.helpers.mail import Email, Content, Mail
+import requests
+import json
 
 #GmailPass = os.environ.get('GmailPass')
 DBPass = os.environ.get('DBPass')
@@ -21,19 +18,16 @@ DatabaseURL = os.environ.get('DATABASE_URL')
 SendGridAPIKey=os.environ.get('SENDGRID_API_KEY')
 TimePastHour=os.environ.get('TimePastHour')
 
-def SendGrid_Email(user,recipient,subject,body):
+def sendgrid_email(user,recipient,subject,body):
 	sg = sendgrid.SendGridAPIClient(apikey=SendGridAPIKey)
 	from_email = Email(user)
 	to_email = Email(recipient)
 	content = Content("text/plain",body)
 	mail = Mail(from_email,subject,to_email,content)
 	response = sg.client.mail.send.post(request_body=mail.get())
-	#print(response.status_code)
-	#print(response.body)
-	#print(response.headers)
 
 
-def DetectNewShows(newhtml):
+def detect_new_shows(new_shows):
 	print ("Checking for new shows")
 	
 	#Connects to the database, creates a cursor
@@ -53,13 +47,7 @@ def DetectNewShows(newhtml):
 
 	
 	cur = conn.cursor()
-	
-	#uses beautifulsoup to process the html
-	newprocessedhtml = BeautifulSoup(newhtml,'lxml')
-	
-	#parses the html for the show names
-	newshows = newprocessedhtml.find_all('div',class_='ListingShowTitle')
-	
+		
 	#clears the previous pull
 	cur.execute("DELETE FROM latest_tdf_pull;")
 
@@ -70,7 +58,7 @@ def DetectNewShows(newhtml):
 	#print oldline
 
 	#inserts the latest pull into the database
-	for show in newshows:
+	for show in new_shows:
 		#print show.text
 		cur.execute("INSERT INTO latest_tdf_pull(show_name,last_found) VALUES (%s,%s);",[show.text,datetime.datetime.now()])
 
@@ -113,37 +101,46 @@ def DetectNewShows(newhtml):
 		#Sends the email
 		#print emailbody
 		for email in emails:
-			SendGrid_Email("tdfmonitor@gmail.com",email[0],"New show detected by TDF Monitor",emailbody)
+			sendgrid_email("tdfmonitor@gmail.com",email[0],"New show detected by TDF Monitor",emailbody)
 		
 	else:
 		print("No new shows detected")
 
 
-def TDFPull():
-	print("Pulling html from TDF")
-	#Go to website and login
-	#driver = webdriver.Ie()
-	driver = webdriver.PhantomJS()
+def TDF_pull():
+	# Goes to the tdf website and gets the show list
+	# This is complicated by the complex CSRF verification TDF does
+	with requests.Session() as session:
+	    session = requests.Session()
+	    login_page = session.get('https://my.tdf.org/account/login')
+	    login_soup = bs4.BeautifulSoup(login_page.text, features='lxml')
+	    rvt = login_soup.find(attrs={'name': '__RequestVerificationToken'})['value']
+	    data = {'__RequestVerificationToken': rvt, 'PatronAccountLogin.Username': TDFUsername, 'PatronAccountLogin.Password': TDFPass}
+	    login_post = session.post('https://my.tdf.org/account/login?', data=data)
+	    payload = {'actionUrl': 'https://nycgw47.tdf.org/TDFCustomOfferings'}
+	    next_page = session.get('https://my.tdf.org/components/sharedsession', params=payload)
+	    next_page_soup = bs4.BeautifulSoup(next_page.text, features='lxml')
+	    epv = next_page_soup.find(id="EncryptedPayload_Value")['value']
+	    data = {'EncryptedPayload.Value': epv, 'ReturnUrl': ''}
+	    custom_offerings = session.post('https://nycgw47.tdf.org/TDFCustomOfferings', data=data)
+	    payload = {'handler': 'Performances'}
+	    shows = session.get('https://nycgw47.tdf.org/TDFCustomOfferings/Current', params=payload)
 
-	#Waits 5 seconds before giving up on finding elements
-	driver.implicitly_wait(5)
+	shows_list = json.loads(shows.text)
 
-	driver.get('http://secure2.tdf.org')
-	username = driver.find_element_by_name('LOGON_EMAIL')
-	username.clear()
-	username.send_keys(TDFUsername)
-	username = driver.find_element_by_name('LOGON_PASSWORD')
-	username.send_keys(TDFPass)
+	broadway_shows = []
+	for show in shows_list:
+	    keywords = show['keywords']
+	    for keyword in keywords:
+	        if keyword['categoryName'] == 'Venue' and keyword['keywordName'] == 'Broadway':
+	            broadway_shows.append(show['title'])
 
-	driver.find_element_by_class_name('DefaultFormButton').click()
-	driver.get('https://members.tdf.org/welcome/currentofferings.html')
-	
-	allshows = driver.page_source
-	driver.quit()
-	return allshows	
+	print(broadway_shows)
+
+	return broadway_shows
 
 
-def waitonehour():
+def wait_one_hour():
 	#Calculates the next run time (top of the next hour). 
 	#Note that waiting an hour would cause time drift (thus the rounding)
 	currenttime = datetime.datetime.today()
@@ -152,17 +149,19 @@ def waitonehour():
 	nextrun = roundedtime + waittime
 	time.sleep((nextrun-currenttime).total_seconds()+int(TimePastHour)*60)
 
-while True:
-	#Prints a timestamp
-	timestamp = time.strftime("%m/%d/%y %H:%M:")
-	print (timestamp.encode('utf-8'))
 
-	#Pulls the HTML from the TDF website
-	newhtml = TDFPull()
+if __name__ == '__main__':
+	while True:
+		#Prints a timestamp
+		timestamp = time.strftime("%m/%d/%y %H:%M:")
+		print (timestamp.encode('utf-8'))
 
-	#Compares the current and previous shows
-	DetectNewShows(newhtml)
+		#Pulls the HTML from the TDF website
+		new_shows = TDF_pull()
 
-	#Waits for an hour to check again
-	print ("Going back to sleep\n")
-	waitonehour()
+		#Compares the current and previous shows
+		detect_new_shows(new_shows)
+
+		#Waits for an hour to check again
+		print ("Going back to sleep\n")
+		wait_one_hour()

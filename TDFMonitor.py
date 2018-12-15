@@ -60,7 +60,7 @@ def detect_new_shows(new_shows):
     #inserts the latest pull into the database
     for show in new_shows:
         #print show.text
-        cur.execute("INSERT INTO latest_tdf_pull(show_name,last_found) VALUES (%s,%s);",[show.text,datetime.datetime.now()])
+        cur.execute("INSERT INTO latest_tdf_pull(show_name,last_found) VALUES (%s,%s);",[show,datetime.datetime.now()])
 
     #compares the two tables to identify what is new
     cur.execute("""SELECT latest_tdf_pull.show_name FROM latest_tdf_pull LEFT OUTER JOIN tdf_shows ON (latest_tdf_pull.show_name = tdf_shows.show_name)

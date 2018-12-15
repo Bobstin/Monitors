@@ -7,3 +7,4 @@ TDF_Scraper_localpass_DB_Version.py
 venv/
 ghostdriver.log
 TravelOnlyProcfile.test
+scratch.py

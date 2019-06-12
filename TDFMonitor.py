@@ -113,12 +113,12 @@ def TDF_pull():
     # Goes to the tdf website and gets the show list
     # This is complicated by the complex CSRF verification TDF does
     with requests.Session() as session:
-        session = requests.Session()
         login_page = session.get('https://my.tdf.org/account/login')
         login_soup = bs4.BeautifulSoup(login_page.text, features='lxml')
         rvt = login_soup.find(attrs={'name': '__RequestVerificationToken'})['value']
         data = {'__RequestVerificationToken': rvt, 'PatronAccountLogin.Username': TDFUsername, 'PatronAccountLogin.Password': TDFPass}
         login_post = session.post('https://my.tdf.org/account/login?', data=data)
+        page_for_cookie = session.get('https://nycgw47.tdf.org/TDFCustomOfferings')
         payload = {'actionUrl': 'https://nycgw47.tdf.org/TDFCustomOfferings'}
         next_page = session.get('https://my.tdf.org/components/sharedsession', params=payload)
         next_page_soup = bs4.BeautifulSoup(next_page.text, features='lxml')

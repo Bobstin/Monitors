@@ -133,9 +133,10 @@ def TDF_pull():
     broadway_shows = []
     for show in shows_list:
         keywords = show['keywords']
-        for keyword in keywords:
-            if keyword['categoryName'] == 'Venue' and keyword['keywordName'] == 'Broadway':
-                broadway_shows.append(show['title'])
+        if keywords is not None:
+            for keyword in keywords:
+                if keyword['categoryName'] == 'Venue' and keyword['keywordName'] == 'Broadway':
+                    broadway_shows.append(show['title'])
 
     return broadway_shows
 

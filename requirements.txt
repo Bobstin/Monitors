@@ -1,5 +1,5 @@
 bs4==0.0.1
-lxml==4.2.5
+lxml==4.6.3
 psycopg2==2.7.6.1
 sendgrid==5.6.0
 twython==3.7.0

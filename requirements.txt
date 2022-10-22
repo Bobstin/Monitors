@@ -1,5 +1,5 @@
-bs4==0.0.1
-lxml==4.2.5
-psycopg2==2.7.6.1
-sendgrid==5.6.0
-twython==3.7.0
+beautifulsoup4==4.11.1
+lxml==4.9.1
+psycopg2==2.9.4
+sendgrid==6.9.7
+twython==3.9.1
